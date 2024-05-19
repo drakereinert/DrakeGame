@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,14 +16,12 @@ import java.util.Locale;
 class GameScreen implements Screen {
 
     final Drake game;
-
-    //screen
-    //private Camera camera; //Use Drake Class Camera
-    //private Viewport viewport; //Use Drake Class Viewport
-
+    //Sounds
+    Sound enemyExplosion = Gdx.audio.newSound(Gdx.files.internal("Explosion/Retro Explosion Short 15.wav"));
+    Sound playerLifeLost = Gdx.audio.newSound(Gdx.files.internal("Explosion/Retro Explosion Long 02.wav"));
+    Sound playerLastLifeLost = Gdx.audio.newSound(Gdx.files.internal("Explosion/Retro Explosion Swoshes 04.wav"));
 
     //graphics
-    //private SpriteBatch batch; No longer needed, batch object created in Drake class.
     private TextureAtlas textureAtlas;
     private Texture explosionTexture;
 
@@ -40,27 +39,19 @@ class GameScreen implements Screen {
     private float timeBetweenEnemySpawns = 3f;
     private float enemySpawnTimer = 0;
 
-
-    //world parameters
-    //private final float WORLD_WIDTH = 640;
-    //private final float WORLD_HEIGHT = 360;
-
     //game objects
     private PlayerShip player1Ship;
     private PlayerShip player2Ship;
     private LinkedList<EnemyShip> enemyShipLinkedList;
 
-    boolean spaceAlreadyPressed = false;
-    boolean mAlreadyPressed = false;
+    boolean p1LaserKeyAlreadyPressed = false;
+    boolean p2LaserKeyAlreadyPressed = false;
 
 
     private LinkedList<Laser> player1LaserList;
     private LinkedList<Laser> player2LaserList;
     private LinkedList<Laser> enemyLaserList;
     private LinkedList<Explosion> explosionList;
-
-    private int p1Score = 0;
-    private int p2Score = 0;
 
     private float timeAfterDestroy = 0;
 
@@ -72,6 +63,7 @@ class GameScreen implements Screen {
 
     GameScreen(final Drake game) {
         this.game = game;
+
         //this.game.camera = new OrthographicCamera();
         //this.game.viewport = new StretchViewport(this.game.WORLD_WIDTH, this.game.WORLD_HEIGHT, this.game.camera);
 
@@ -122,26 +114,14 @@ class GameScreen implements Screen {
         enemyLaserList = new LinkedList<>();
         explosionList = new LinkedList<>();
 
-
-        //batch = new SpriteBatch(); No longer needed, batch object created in Drake class.
-
         prepareHud();
+        game.music.play();
+        game.music.setLooping(true);
     }
 
 //------------------------------------------------------------------------
 
     private void prepareHud() {
-        //Create a BitmapFont from font file
-/*
-        FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("invasion2000/INVASION2000.TTF"));
-        FreeTypeFontGenerator.FreeTypeFontParameter fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        fontParameter.size = 128;
-        fontParameter.borderWidth = 4f;
-        fontParameter.color = new Color(1,1,1,0.3f);
-        fontParameter.borderColor = new Color(0,0,0, 0.3f);
-
-        game.font = fontGenerator.generateFont(fontParameter);
-*/
         //scale the font to fit world
         game.font.getData().setScale(0.5f);
         int screenSections = 7;
@@ -165,6 +145,11 @@ class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        textureAtlas.dispose();
+        explosionTexture.dispose();
+        enemyExplosion.dispose();
+        playerLifeLost.dispose();
+        playerLastLifeLost.dispose();
     }
 
 //------------------------------------------------------------------------
@@ -250,10 +235,10 @@ class GameScreen implements Screen {
         game.font.draw(game.batch, "Lives", hudRightXPlayer2, hudRow1Y, hudSectionWidth, Align.right, false);
 
         //Render 2nd Row
-        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", p1Score), hudLeftX, hudRow2Y, hudSectionWidth, Align.left, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", game.p1Score), hudLeftX, hudRow2Y, hudSectionWidth, Align.left, false);
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player1Ship.shield), hudCenterX, hudRow2Y, hudSectionWidth, Align.center, false);
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player1Ship.lives), hudRightX, hudRow2Y, hudSectionWidth, Align.right, false);
-        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", p2Score), hudLeftXPlayer2, hudRow2Y, hudSectionWidth, Align.left, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", game.p2Score), hudLeftXPlayer2, hudRow2Y, hudSectionWidth, Align.left, false);
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player2Ship.shield), hudCenterXPlayer2, hudRow2Y, hudSectionWidth, Align.center, false);
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player2Ship.lives), hudRightXPlayer2, hudRow2Y, hudSectionWidth, Align.right, false);
 
@@ -275,9 +260,9 @@ class GameScreen implements Screen {
                     enemyShipTextureRegion, enemyShieldTextureRegion, enemyLaserTextureRegion));
             enemySpawnTimer -= timeBetweenEnemySpawns;
             if (timeBetweenEnemySpawns > 2) {
-                timeBetweenEnemySpawns -= .2f;
-            } else if (timeBetweenEnemySpawns > 1) {
                 timeBetweenEnemySpawns -= .1f;
+            } else if (timeBetweenEnemySpawns > 1) {
+                timeBetweenEnemySpawns -= .05f;
             }
             else if (timeBetweenEnemySpawns > 0.5f) {
                 timeBetweenEnemySpawns -= .05f;
@@ -416,23 +401,23 @@ class GameScreen implements Screen {
 
         //Player 1 Lasers
         boolean spaceIsPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
-        if (spaceIsPressed && !spaceAlreadyPressed) {
+        if (spaceIsPressed && !p1LaserKeyAlreadyPressed) {
             Laser[] lasers = player1Ship.fireLasers();
             for (Laser laser : lasers) {
                 player1LaserList.add(laser);
             }
         }
-        spaceAlreadyPressed = spaceIsPressed;
+        p1LaserKeyAlreadyPressed = spaceIsPressed;
 
         //Player 2 Lasers
-        boolean mIsPressed = Gdx.input.isKeyPressed(Input.Keys.SLASH);
-        if (mIsPressed && !mAlreadyPressed) {
+        boolean mIsPressed = Gdx.input.isKeyPressed(Input.Keys.BACKSLASH);
+        if (mIsPressed && !p2LaserKeyAlreadyPressed) {
             Laser[] lasers = player2Ship.fireLasers();
             for (Laser laser : lasers) {
                 player2LaserList.add(laser);
             }
         }
-        mAlreadyPressed = mIsPressed;
+        p2LaserKeyAlreadyPressed = mIsPressed;
 
 /*        Allows user to hold shoot key to fire lasers.
  *         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && player1Ship.canFireLaser()) {
@@ -506,7 +491,8 @@ class GameScreen implements Screen {
                     enemyShipListIterator.remove();
                     explosionList.add(new Explosion(explosionTexture,
                             new Rectangle(enemyShip.boundingBox), 0.7f));
-                    p1Score += 100;
+                    game.p1Score += 100;
+                    enemyExplosion.play();
                 }
                 laserListIterator.remove();
                 break;
@@ -526,7 +512,8 @@ class GameScreen implements Screen {
                         enemyShipListIterator.remove();
                         explosionList.add(new Explosion(explosionTexture,
                                 new Rectangle(enemyShip.boundingBox), 0.7f));
-                        p2Score += 100;
+                        game.p2Score += 100;
+                        enemyExplosion.play();
                     }
                     p2laserListIterator.remove();
                     break;
@@ -546,9 +533,11 @@ class GameScreen implements Screen {
                     player1Ship.lives --;
                     if (player1Ship.lives > 0) {
                         player1Ship.shield = 3;
+                        playerLifeLost.play();
                     }
                     else {
                         player1Ship.boundingBox.set(0, game.WORLD_HEIGHT, 0, 0);
+                        playerLastLifeLost.play();
                     }
                 }
                 laserListIterator.remove();
@@ -561,9 +550,12 @@ class GameScreen implements Screen {
                     player2Ship.lives --;
                     if (player2Ship.lives > 0) {
                         player2Ship.shield = 3;
+                        playerLifeLost.play();
+
                     }
                     else {
                         player2Ship.boundingBox.set(0, game.WORLD_HEIGHT, 0, 0);
+                        playerLastLifeLost.play();
                     }
                 }
                 laserListIterator.remove();
@@ -573,6 +565,7 @@ class GameScreen implements Screen {
         if (player1Ship.lives == 0 && player2Ship.lives == 0) {
             timeAfterDestroy += deltaTime;
             if(timeAfterDestroy > 2) {
+                game.music.stop();
                 game.setScreen(new GameOverScreen(game));
                 dispose();
             }

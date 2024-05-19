@@ -9,19 +9,13 @@ import com.badlogic.gdx.utils.ScreenUtils;
 public class MainMenuScreen implements Screen {
 
     final Drake game;
-    //private Camera camera; //use Drake Class
-    //private Viewport viewport; //use Drake Class
     private final GlyphLayout glyphLayout = new GlyphLayout();
     private final GlyphLayout glyphLayoutTitle = new GlyphLayout();
 
 
     public MainMenuScreen(final Drake game) {
         this.game = game;
-
-        //camera = new OrthographicCamera(); //use Drake Class Camera
-        //viewport = new StretchViewport(); //use Drake Class Viewport
-
-
+        game.menuMusic.play();
     }
 
     @Override
@@ -41,6 +35,7 @@ public class MainMenuScreen implements Screen {
         game.batch.end();
 
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            game.menuMusic.pause();
             game.setScreen(new GameScreen(game));
             dispose();
         }
@@ -69,5 +64,6 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
+        game.menuMusic.dispose();
     }
 }

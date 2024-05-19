@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -19,6 +20,8 @@ public class Drake extends Game {
 	SpriteBatch batch;
 	BitmapFont font;
 	BitmapFont fontTitle;
+	Music music;
+	Music menuMusic;
 
 	//Screen objects
 	MainMenuScreen mainMenuScreen;
@@ -27,6 +30,9 @@ public class Drake extends Game {
 	//World Parameters
 	public final float WORLD_WIDTH = 640;
 	public final float WORLD_HEIGHT = 360;
+
+	public int p1Score = 0;
+	public int p2Score = 0;
 
 	public Camera camera;
 	public Viewport viewport;
@@ -48,13 +54,17 @@ public class Drake extends Game {
 
 	@Override
 	public void dispose() {
-
+		batch.dispose();
+		font.dispose();
+		fontTitle.dispose();
+		music.dispose();
 	}
 
 	@Override
 	public void create() {
 		batch = new SpriteBatch();
-
+		music = Gdx.audio.newMusic(Gdx.files.internal("mainMusic.mp3"));
+		menuMusic = Gdx.audio.newMusic(Gdx.files.internal("8bitNeverGonnaGiveYouUp.mp3"));
 		font = new BitmapFont();
 		fontTitle = new BitmapFont();
 

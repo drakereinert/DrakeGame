@@ -38,7 +38,7 @@ tasks.register('debug', JavaExec) {
 tasks.register('dist', Jar) {
     duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
     manifest {
-        attributes 'Main-Class': project.mainClassName
+        attributes 'Main-Class': project.DesktopLauncher
     }
     dependsOn configurations.runtimeClasspath
     from {

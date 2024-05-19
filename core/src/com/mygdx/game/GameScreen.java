@@ -3,19 +3,11 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -26,8 +18,8 @@ class GameScreen implements Screen {
     final Drake game;
 
     //screen
-    private Camera camera;
-    private Viewport viewport;
+    //private Camera camera; //Use Drake Class Camerea
+    //private Viewport viewport; //Use Drake Class Viewport
 
 
     //graphics
@@ -77,8 +69,8 @@ class GameScreen implements Screen {
 
     GameScreen(final Drake game) {
         this.game = game;
-        camera = new OrthographicCamera();
-        viewport = new StretchViewport(this.game.WORLD_WIDTH, this.game.WORLD_HEIGHT, camera);
+        //this.game.camera = new OrthographicCamera();
+        //this.game.viewport = new StretchViewport(this.game.WORLD_WIDTH, this.game.WORLD_HEIGHT, this.game.camera);
 
         //set up the texture atlas
         textureAtlas = new TextureAtlas("images.atlas");
@@ -136,6 +128,7 @@ class GameScreen implements Screen {
 
     private void prepareHud() {
         //Create a BitmapFont from font file
+/*
         FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("invasion2000/INVASION2000.TTF"));
         FreeTypeFontGenerator.FreeTypeFontParameter fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         fontParameter.size = 128;
@@ -144,9 +137,9 @@ class GameScreen implements Screen {
         fontParameter.borderColor = new Color(0,0,0, 0.3f);
 
         game.font = fontGenerator.generateFont(fontParameter);
-
+*/
         //scale the font to fit world
-        game.font.getData().setScale(0.08f);
+        game.font.getData().setScale(0.5f);
 
         //Calculate hud margins, etc.
         hudVerticalMargin = game.font.getCapHeight() / 2;
@@ -187,8 +180,8 @@ class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-         viewport.update(width, height, true);
-         game.batch.setProjectionMatrix(camera.combined);
+         game.viewport.update(width, height, true);
+         game.batch.setProjectionMatrix(game.camera.combined);
     }
 
 //------------------------------------------------------------------------

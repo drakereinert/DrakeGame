@@ -22,6 +22,7 @@ public class Drake extends Game {
 
 	//Screen objects
 	MainMenuScreen mainMenuScreen;
+	//GameOverScreen gameOverScreen;
 
 	//World Parameters
 	public final float WORLD_WIDTH = 640;
@@ -80,6 +81,7 @@ public class Drake extends Game {
 		camera = new OrthographicCamera();
 		viewport = new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
 		mainMenuScreen = new MainMenuScreen(this);
+		//gameOverScreen = new GameOverScreen(this);
 		setScreen(mainMenuScreen);
 	}
 }

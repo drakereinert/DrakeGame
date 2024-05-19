@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
-
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -18,7 +17,7 @@ class GameScreen implements Screen {
     final Drake game;
 
     //screen
-    //private Camera camera; //Use Drake Class Camerea
+    //private Camera camera; //Use Drake Class Camera
     //private Viewport viewport; //Use Drake Class Viewport
 
 
@@ -52,6 +51,8 @@ class GameScreen implements Screen {
     private LinkedList<EnemyShip> enemyShipLinkedList;
 
     boolean spaceAlreadyPressed = false;
+    boolean mAlreadyPressed = false;
+
 
     private LinkedList<Laser> player1LaserList;
     private LinkedList<Laser> player2LaserList;
@@ -61,9 +62,11 @@ class GameScreen implements Screen {
     private int p1Score = 0;
     private int p2Score = 0;
 
+    private float timeAfterDestroy = 0;
+
     //Heads-Up Display
     //BitmapFont font; //Moved to Drake Class
-    float hudVerticalMargin, hudLeftX, hudRightX, hudCenterX, hudRow1Y, hudRow2Y, hudSectionWidth;
+    float hudMargin, hudLeftX, hudRightX, hudCenterX, hudRow1Y, hudRow2Y, hudSectionWidth, hudLeftXPlayer2, hudRightXPlayer2, hudCenterXPlayer2;
 
 //------------------------------------------------------------------------
 
@@ -119,6 +122,7 @@ class GameScreen implements Screen {
         enemyLaserList = new LinkedList<>();
         explosionList = new LinkedList<>();
 
+
         //batch = new SpriteBatch(); No longer needed, batch object created in Drake class.
 
         prepareHud();
@@ -140,15 +144,21 @@ class GameScreen implements Screen {
 */
         //scale the font to fit world
         game.font.getData().setScale(0.5f);
-
+        int screenSections = 7;
         //Calculate hud margins, etc.
-        hudVerticalMargin = game.font.getCapHeight() / 2;
-        hudLeftX = hudVerticalMargin;
-        hudRightX = game.WORLD_WIDTH * 2/3 - hudLeftX;
-        hudCenterX = game.WORLD_WIDTH / 3;
-        hudRow1Y = game.WORLD_HEIGHT - hudVerticalMargin;
-        hudRow2Y = hudRow1Y - hudVerticalMargin - game.font.getCapHeight();
-        hudSectionWidth = game.WORLD_WIDTH / 3;
+        hudMargin = game.font.getCapHeight() / 2;
+        //Player 1
+        hudLeftX = hudMargin;
+        hudRightX = game.WORLD_WIDTH * 2/ screenSections - hudLeftX;
+        hudCenterX = game.WORLD_WIDTH / screenSections;
+        //Player 2
+        hudLeftXPlayer2 = game.WORLD_WIDTH * (screenSections - 3)/ screenSections + hudMargin;
+        hudRightXPlayer2 = game.WORLD_WIDTH * (screenSections - 1)/ screenSections - hudLeftX;
+        hudCenterXPlayer2 = game.WORLD_WIDTH * (screenSections -2)/ screenSections;
+
+        hudRow1Y = game.WORLD_HEIGHT - hudMargin;
+        hudRow2Y = hudRow1Y - hudMargin - game.font.getCapHeight();
+        hudSectionWidth = game.WORLD_WIDTH / screenSections;
     }
 
 //------------------------------------------------------------------------
@@ -217,7 +227,7 @@ class GameScreen implements Screen {
         renderLasers(deltaTime);
 
         //detect collisions between lasers and ships
-        detectCollisions();
+        detectCollisions(deltaTime);
 
         //explosions
         renderExplosions(deltaTime);
@@ -235,11 +245,18 @@ class GameScreen implements Screen {
         game.font.draw(game.batch, "Score", hudLeftX, hudRow1Y, hudSectionWidth, Align.left, false);
         game.font.draw(game.batch, "Shield", hudCenterX, hudRow1Y, hudSectionWidth, Align.center, false);
         game.font.draw(game.batch, "Lives", hudRightX, hudRow1Y, hudSectionWidth, Align.right, false);
+        game.font.draw(game.batch, "Score", hudLeftXPlayer2, hudRow1Y, hudSectionWidth, Align.left, false);
+        game.font.draw(game.batch, "Shield", hudCenterXPlayer2, hudRow1Y, hudSectionWidth, Align.center, false);
+        game.font.draw(game.batch, "Lives", hudRightXPlayer2, hudRow1Y, hudSectionWidth, Align.right, false);
 
         //Render 2nd Row
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", p1Score), hudLeftX, hudRow2Y, hudSectionWidth, Align.left, false);
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player1Ship.shield), hudCenterX, hudRow2Y, hudSectionWidth, Align.center, false);
         game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player1Ship.lives), hudRightX, hudRow2Y, hudSectionWidth, Align.right, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", p2Score), hudLeftXPlayer2, hudRow2Y, hudSectionWidth, Align.left, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player2Ship.shield), hudCenterXPlayer2, hudRow2Y, hudSectionWidth, Align.center, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player2Ship.lives), hudRightXPlayer2, hudRow2Y, hudSectionWidth, Align.right, false);
+
     }
 
 //------------------------------------------------------------------------
@@ -258,8 +275,11 @@ class GameScreen implements Screen {
                     enemyShipTextureRegion, enemyShieldTextureRegion, enemyLaserTextureRegion));
             enemySpawnTimer -= timeBetweenEnemySpawns;
             if (timeBetweenEnemySpawns > 2) {
-                timeBetweenEnemySpawns -= .1f;
+                timeBetweenEnemySpawns -= .2f;
             } else if (timeBetweenEnemySpawns > 1) {
+                timeBetweenEnemySpawns -= .1f;
+            }
+            else if (timeBetweenEnemySpawns > 0.5f) {
                 timeBetweenEnemySpawns -= .05f;
             }
         }
@@ -281,12 +301,12 @@ class GameScreen implements Screen {
         leftLimit = -player1Ship.boundingBox.x;
         downLimit = -player1Ship.boundingBox.y;
         rightLimit = game.WORLD_WIDTH - player1Ship.boundingBox.x - player1Ship.boundingBox.width;
-        upLimit = (float)game.WORLD_HEIGHT/2 - player1Ship.boundingBox.y - player1Ship.boundingBox.height;
+        upLimit = game.WORLD_HEIGHT/2 - player1Ship.boundingBox.y - player1Ship.boundingBox.height;
 
         p2leftLimit = -player2Ship.boundingBox.x;
         p2downLimit = -player2Ship.boundingBox.y;
         p2rightLimit = game.WORLD_WIDTH - player2Ship.boundingBox.x - player2Ship.boundingBox.width;
-        p2upLimit = (float)game.WORLD_HEIGHT/2 - player2Ship.boundingBox.y - player2Ship.boundingBox.height;
+        p2upLimit = game.WORLD_HEIGHT/2 - player2Ship.boundingBox.y - player2Ship.boundingBox.height;
 
         if (Gdx.input.isKeyPressed(Input.Keys.D) && rightLimit > 0) {
             float xChange = player1Ship.movementSpeed * deltaTime;
@@ -384,16 +404,17 @@ class GameScreen implements Screen {
 
     private void renderLasers(float deltaTime) {
         //create new lasers
-        //player lasers
 
-       //Auto fire code - not used
-            if (player2Ship.canFireLaser()) {
-            Laser[] lasers = player2Ship.fireLasers();
-            for (Laser laser : lasers) {
-                player2LaserList.add(laser);
-            }
-          }
+/*       //Auto fire code - not used
+  *          if (player2Ship.canFireLaser()) {
+  *         Laser[] lasers = player2Ship.fireLasers();
+  *          for (Laser laser : lasers) {
+  *              player2LaserList.add(laser);
+  *          }
+  *        }
+    */
 
+        //Player 1 Lasers
         boolean spaceIsPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
         if (spaceIsPressed && !spaceAlreadyPressed) {
             Laser[] lasers = player1Ship.fireLasers();
@@ -401,16 +422,25 @@ class GameScreen implements Screen {
                 player1LaserList.add(laser);
             }
         }
-
         spaceAlreadyPressed = spaceIsPressed;
 
-/*        Allows user to hold shoot key to fire lasers.
-          if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && player1Ship.canFireLaser()) {
-            Laser[] lasers = player1Ship.fireLasers();
+        //Player 2 Lasers
+        boolean mIsPressed = Gdx.input.isKeyPressed(Input.Keys.SLASH);
+        if (mIsPressed && !mAlreadyPressed) {
+            Laser[] lasers = player2Ship.fireLasers();
             for (Laser laser : lasers) {
-                player1LaserList.add(laser);
+                player2LaserList.add(laser);
             }
         }
+        mAlreadyPressed = mIsPressed;
+
+/*        Allows user to hold shoot key to fire lasers.
+ *         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && player1Ship.canFireLaser()) {
+ *           Laser[] lasers = player1Ship.fireLasers();
+ *           for (Laser laser : lasers) {
+ *               player1LaserList.add(laser);
+ *           }
+ *       }
 */
         //enemy lasers
         ListIterator<EnemyShip> enemyShipListIterator = enemyShipLinkedList.listIterator();
@@ -459,7 +489,7 @@ class GameScreen implements Screen {
 
 //------------------------------------------------------------------------
 
-    private void detectCollisions() {
+    private void detectCollisions(float deltaTime) {
         //for each player laser, check whether it intersects an enemy ship
         ListIterator<Laser> laserListIterator = player1LaserList.listIterator();
         ListIterator<Laser> p2laserListIterator = player2LaserList.listIterator();
@@ -539,8 +569,13 @@ class GameScreen implements Screen {
                 laserListIterator.remove();
             }
         }
-        if (player1Ship.lives == 0 && player2Ship.lives == 0) {
 
+        if (player1Ship.lives == 0 && player2Ship.lives == 0) {
+            timeAfterDestroy += deltaTime;
+            if(timeAfterDestroy > 2) {
+                game.setScreen(new GameOverScreen(game));
+                dispose();
+            }
         }
     }
 

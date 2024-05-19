@@ -25,7 +25,7 @@ public class MainMenuScreen implements Screen {
     }
 
     @Override
-    public void render(float delta) {
+    public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0.2f, 1);
 
         game.camera.update();

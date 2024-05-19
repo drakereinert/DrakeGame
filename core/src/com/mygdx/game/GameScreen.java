@@ -23,13 +23,15 @@ import java.util.Locale;
 
 class GameScreen implements Screen {
 
+    final Drake game;
+
     //screen
     private Camera camera;
     private Viewport viewport;
 
 
     //graphics
-    private SpriteBatch batch;
+    //private SpriteBatch batch; No longer needed, batch object created in Drake class.
     private TextureAtlas textureAtlas;
     private Texture explosionTexture;
 
@@ -49,8 +51,8 @@ class GameScreen implements Screen {
 
 
     //world parameters
-    private final float WORLD_WIDTH = 640;
-    private final float WORLD_HEIGHT = 360;
+    //private final float WORLD_WIDTH = 640;
+    //private final float WORLD_HEIGHT = 360;
 
     //game objects
     private PlayerShip player1Ship;
@@ -68,15 +70,15 @@ class GameScreen implements Screen {
     private int p2Score = 0;
 
     //Heads-Up Display
-    BitmapFont font;
+    //BitmapFont font; //Moved to Drake Class
     float hudVerticalMargin, hudLeftX, hudRightX, hudCenterX, hudRow1Y, hudRow2Y, hudSectionWidth;
 
 //------------------------------------------------------------------------
 
-
-    GameScreen() {
+    GameScreen(final Drake game) {
+        this.game = game;
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
+        viewport = new StretchViewport(this.game.WORLD_WIDTH, this.game.WORLD_HEIGHT, camera);
 
         //set up the texture atlas
         textureAtlas = new TextureAtlas("images.atlas");
@@ -88,8 +90,8 @@ class GameScreen implements Screen {
         backgrounds[2] = textureAtlas.findRegion("Starscape02");
         backgrounds[3] = textureAtlas.findRegion("Starscape03");
 
-        backgroundHeight = WORLD_HEIGHT * 2;
-        backgroundMaxScrollingSpeed = (float)(WORLD_HEIGHT)/ 4;
+        backgroundHeight = this.game.WORLD_HEIGHT * 2;
+        backgroundMaxScrollingSpeed = (float)(this.game.WORLD_HEIGHT)/ 4;
 
         //initialize texture regions
         player1shipTextureRegion = textureAtlas.findRegion("playerShip1_blue");
@@ -105,12 +107,12 @@ class GameScreen implements Screen {
 
 
         //set up game objects
-        player1Ship = new PlayerShip(WORLD_WIDTH / 3, WORLD_HEIGHT/4, 20, 20,
+        player1Ship = new PlayerShip(this.game.WORLD_WIDTH / 3, this.game.WORLD_HEIGHT/4, 20, 20,
                 100, 3,
                 1.4f, 8, 250, 0.1f,
                 player1shipTextureRegion, playerShieldTextureRegion, player1LaserTextureRegion);
 
-        player2Ship = new PlayerShip(WORLD_WIDTH * 2/3, WORLD_HEIGHT/4, 20, 20,
+        player2Ship = new PlayerShip(this.game.WORLD_WIDTH * 2/3, this.game.WORLD_HEIGHT/4, 20, 20,
                 100, 3,
                 1.4f, 8, 250, 0.5f,
                 player2shipTextureRegion, playerShieldTextureRegion, player2LaserTextureRegion);
@@ -125,61 +127,50 @@ class GameScreen implements Screen {
         enemyLaserList = new LinkedList<>();
         explosionList = new LinkedList<>();
 
-        batch = new SpriteBatch();
+        //batch = new SpriteBatch(); No longer needed, batch object created in Drake class.
 
         prepareHud();
     }
 
 //------------------------------------------------------------------------
 
-
     private void prepareHud() {
         //Create a BitmapFont from font file
         FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("invasion2000/INVASION2000.TTF"));
         FreeTypeFontGenerator.FreeTypeFontParameter fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-
         fontParameter.size = 128;
         fontParameter.borderWidth = 4f;
         fontParameter.color = new Color(1,1,1,0.3f);
         fontParameter.borderColor = new Color(0,0,0, 0.3f);
 
-        font = fontGenerator.generateFont(fontParameter);
+        game.font = fontGenerator.generateFont(fontParameter);
 
         //scale the font to fit world
-        font.getData().setScale(0.08f);
+        game.font.getData().setScale(0.08f);
 
         //Calculate hud margins, etc.
-        hudVerticalMargin = font.getCapHeight() / 2;
+        hudVerticalMargin = game.font.getCapHeight() / 2;
         hudLeftX = hudVerticalMargin;
-        hudRightX = WORLD_WIDTH * 2/3 - hudLeftX;
-        hudCenterX = WORLD_WIDTH / 3;
-        hudRow1Y = WORLD_HEIGHT - hudVerticalMargin;
-        hudRow2Y = hudRow1Y - hudVerticalMargin - font.getCapHeight();
-        hudSectionWidth = WORLD_WIDTH / 3;
+        hudRightX = game.WORLD_WIDTH * 2/3 - hudLeftX;
+        hudCenterX = game.WORLD_WIDTH / 3;
+        hudRow1Y = game.WORLD_HEIGHT - hudVerticalMargin;
+        hudRow2Y = hudRow1Y - hudVerticalMargin - game.font.getCapHeight();
+        hudSectionWidth = game.WORLD_WIDTH / 3;
     }
 
-
 //------------------------------------------------------------------------
-
-
 
     @Override
     public void dispose() {
-
     }
 
 //------------------------------------------------------------------------
-
-
 
     @Override
     public void hide() {
-
     }
 
 //------------------------------------------------------------------------
-
-
 
     @Override
     public void resume() {
@@ -188,31 +179,24 @@ class GameScreen implements Screen {
 
 //------------------------------------------------------------------------
 
-
-
     @Override
     public void pause() {
-
     }
 
-
 //------------------------------------------------------------------------
-
-
 
     @Override
     public void resize(int width, int height) {
          viewport.update(width, height, true);
-         batch.setProjectionMatrix(camera.combined);
+         game.batch.setProjectionMatrix(camera.combined);
     }
 
 //------------------------------------------------------------------------
 
-
     @Override
     public void render(float deltaTime) {
 
-        batch.begin();
+        game.batch.begin();
 
         //scrolling background
         renderBackground(deltaTime);
@@ -228,13 +212,13 @@ class GameScreen implements Screen {
             EnemyShip enemyShip = enemyShipListIterator.next();
             moveEnemy(enemyShip, deltaTime);
             enemyShip.update(deltaTime);
-            enemyShip.draw(batch);
+            enemyShip.draw(game.batch);
         }
 
 
         //player ships
-        player1Ship.draw(batch);
-        player2Ship.draw(batch);
+        player1Ship.draw(game.batch);
+        player2Ship.draw(game.batch);
 
         //lasers
         renderLasers(deltaTime);
@@ -248,21 +232,21 @@ class GameScreen implements Screen {
         //hud rendering
         updateAndRenderHUD();
 
-        batch.end();
+        game.batch.end();
     }
 
 //------------------------------------------------------------------------
 
     private void updateAndRenderHUD() {
         //Render TOP row
-        font.draw(batch, "Score", hudLeftX, hudRow1Y, hudSectionWidth, Align.left, false);
-        font.draw(batch, "Shield", hudCenterX, hudRow1Y, hudSectionWidth, Align.center, false);
-        font.draw(batch, "Lives", hudRightX, hudRow1Y, hudSectionWidth, Align.right, false);
+        game.font.draw(game.batch, "Score", hudLeftX, hudRow1Y, hudSectionWidth, Align.left, false);
+        game.font.draw(game.batch, "Shield", hudCenterX, hudRow1Y, hudSectionWidth, Align.center, false);
+        game.font.draw(game.batch, "Lives", hudRightX, hudRow1Y, hudSectionWidth, Align.right, false);
 
         //Render 2nd Row
-        font.draw(batch, String.format(Locale.getDefault(), "%06d", p1Score), hudLeftX, hudRow2Y, hudSectionWidth, Align.left, false);
-        font.draw(batch, String.format(Locale.getDefault(), "%02d", player1Ship.shield), hudCenterX, hudRow2Y, hudSectionWidth, Align.center, false);
-        font.draw(batch, String.format(Locale.getDefault(), "%02d", player1Ship.lives), hudRightX, hudRow2Y, hudSectionWidth, Align.right, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", p1Score), hudLeftX, hudRow2Y, hudSectionWidth, Align.left, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player1Ship.shield), hudCenterX, hudRow2Y, hudSectionWidth, Align.center, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%02d", player1Ship.lives), hudRightX, hudRow2Y, hudSectionWidth, Align.right, false);
     }
 
 //------------------------------------------------------------------------
@@ -273,8 +257,8 @@ class GameScreen implements Screen {
 
         if(enemySpawnTimer > timeBetweenEnemySpawns) {
             enemyShipLinkedList.add(new EnemyShip(
-                    (int) (Drake.random.nextDouble() * WORLD_WIDTH) + 20,
-                    (int) (Drake.random.nextDouble() * (.5f * WORLD_HEIGHT) + (.5f * WORLD_HEIGHT) - 20),
+                    (int) (Drake.random.nextDouble() * game.WORLD_WIDTH) + 20,
+                    (int) (Drake.random.nextDouble() * (.5f * game.WORLD_HEIGHT) + (.5f * game.WORLD_HEIGHT) - 20),
                     20, 20,
                     120, 1,
                     1.2f, 14, 150, 0.8f,
@@ -303,13 +287,13 @@ class GameScreen implements Screen {
 
         leftLimit = -player1Ship.boundingBox.x;
         downLimit = -player1Ship.boundingBox.y;
-        rightLimit = WORLD_WIDTH - player1Ship.boundingBox.x - player1Ship.boundingBox.width;
-        upLimit = (float)WORLD_HEIGHT/2 - player1Ship.boundingBox.y - player1Ship.boundingBox.height;
+        rightLimit = game.WORLD_WIDTH - player1Ship.boundingBox.x - player1Ship.boundingBox.width;
+        upLimit = (float)game.WORLD_HEIGHT/2 - player1Ship.boundingBox.y - player1Ship.boundingBox.height;
 
         p2leftLimit = -player2Ship.boundingBox.x;
         p2downLimit = -player2Ship.boundingBox.y;
-        p2rightLimit = WORLD_WIDTH - player2Ship.boundingBox.x - player2Ship.boundingBox.width;
-        p2upLimit = (float)WORLD_HEIGHT/2 - player2Ship.boundingBox.y - player2Ship.boundingBox.height;
+        p2rightLimit = game.WORLD_WIDTH - player2Ship.boundingBox.x - player2Ship.boundingBox.width;
+        p2upLimit = (float)game.WORLD_HEIGHT/2 - player2Ship.boundingBox.y - player2Ship.boundingBox.height;
 
         if (Gdx.input.isKeyPressed(Input.Keys.D) && rightLimit > 0) {
             float xChange = player1Ship.movementSpeed * deltaTime;
@@ -335,25 +319,25 @@ class GameScreen implements Screen {
             player1Ship.translate(0f, yChange);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.L) && rightLimit > 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.L) && p2rightLimit > 0) {
             float xChange = player2Ship.movementSpeed * deltaTime;
             xChange = Math.min(xChange, p2rightLimit);
             player2Ship.translate(xChange, 0f);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.I) && upLimit > 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.I) && p2upLimit > 0) {
             float yChange = player2Ship.movementSpeed * deltaTime;
             yChange = Math.min(yChange, p2upLimit);
             player2Ship.translate(0f, yChange);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.J) && leftLimit < 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.J) && p2leftLimit < 0) {
             float xChange = -player2Ship.movementSpeed * deltaTime;
             xChange = Math.max(xChange, p2leftLimit);
             player2Ship.translate(xChange, 0f);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.K) && downLimit < 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.K) && p2downLimit < 0) {
             float yChange = -player2Ship.movementSpeed * deltaTime;
             yChange = Math.max(yChange, p2downLimit);
             player2Ship.translate(0f, yChange);
@@ -368,9 +352,9 @@ class GameScreen implements Screen {
         float leftLimit, rightLimit, upLimit, downLimit;
 
         leftLimit = -enemyShip.boundingBox.x;
-        downLimit = (float)WORLD_HEIGHT/2 - enemyShip.boundingBox.y;
-        rightLimit = WORLD_WIDTH - enemyShip.boundingBox.x - enemyShip.boundingBox.width;
-        upLimit = WORLD_HEIGHT - enemyShip.boundingBox.y - enemyShip.boundingBox.height;
+        downLimit = (float)game.WORLD_HEIGHT/2 - enemyShip.boundingBox.y;
+        rightLimit = game.WORLD_WIDTH - enemyShip.boundingBox.x - enemyShip.boundingBox.width;
+        upLimit = game.WORLD_HEIGHT - enemyShip.boundingBox.y - enemyShip.boundingBox.height;
 
         float xMove = enemyShip.getDirectionVector().x * enemyShip.movementSpeed * deltaTime;
         float yMove = enemyShip.getDirectionVector().y * enemyShip.movementSpeed * deltaTime;
@@ -395,11 +379,11 @@ class GameScreen implements Screen {
 
         //draw each background layer
         for (int layer = 0; layer < backgroundOffsets.length; layer ++) {
-            if (backgroundOffsets[layer] > WORLD_HEIGHT) {
+            if (backgroundOffsets[layer] > game.WORLD_HEIGHT) {
                 backgroundOffsets[layer] =  0;
             }
-            batch.draw(backgrounds[layer],0,-backgroundOffsets[layer], WORLD_WIDTH, WORLD_HEIGHT);
-            batch.draw(backgrounds[layer],0,-backgroundOffsets[layer]+WORLD_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT);
+            game.batch.draw(backgrounds[layer],0,-backgroundOffsets[layer], game.WORLD_WIDTH, game.WORLD_HEIGHT);
+            game.batch.draw(backgrounds[layer],0,-backgroundOffsets[layer] + game.WORLD_HEIGHT, game.WORLD_WIDTH, game.WORLD_HEIGHT);
         }
     }
 
@@ -452,9 +436,9 @@ class GameScreen implements Screen {
         ListIterator<Laser> iterator = player1LaserList.listIterator();
         while(iterator.hasNext()) {
             Laser laser = iterator.next();
-            laser.draw(batch);
+            laser.draw(game.batch);
             laser.boundingBox.y += laser.movementSpeed * deltaTime;
-            if (laser.boundingBox.y > WORLD_HEIGHT) {
+            if (laser.boundingBox.y > game.WORLD_HEIGHT) {
                 iterator.remove();
             }
         }
@@ -462,9 +446,9 @@ class GameScreen implements Screen {
         iterator = player2LaserList.listIterator();
         while(iterator.hasNext()) {
             Laser laser = iterator.next();
-            laser.draw(batch);
+            laser.draw(game.batch);
             laser.boundingBox.y += laser.movementSpeed * deltaTime;
-            if (laser.boundingBox.y > WORLD_HEIGHT) {
+            if (laser.boundingBox.y > game.WORLD_HEIGHT) {
                 iterator.remove();
             }
         }
@@ -472,7 +456,7 @@ class GameScreen implements Screen {
         iterator = enemyLaserList.listIterator();
         while(iterator.hasNext()) {
             Laser laser = iterator.next();
-            laser.draw(batch);
+            laser.draw(game.batch);
             laser.boundingBox.y -= laser.movementSpeed * deltaTime;
             if (laser.boundingBox.y + laser.boundingBox.height < 0) {
                 iterator.remove();
@@ -541,7 +525,7 @@ class GameScreen implements Screen {
                         player1Ship.shield = 3;
                     }
                     else {
-                        player1Ship.boundingBox.set(0, WORLD_HEIGHT, 0, 0);
+                        player1Ship.boundingBox.set(0, game.WORLD_HEIGHT, 0, 0);
                     }
                 }
                 laserListIterator.remove();
@@ -556,7 +540,7 @@ class GameScreen implements Screen {
                         player2Ship.shield = 3;
                     }
                     else {
-                        player2Ship.boundingBox.set(0, WORLD_HEIGHT, 0, 0);
+                        player2Ship.boundingBox.set(0, game.WORLD_HEIGHT, 0, 0);
                     }
                 }
                 laserListIterator.remove();
@@ -578,7 +562,7 @@ class GameScreen implements Screen {
                 explosionListIterator.remove();
             }
             else {
-                explosion.draw(batch);
+                explosion.draw(game.batch);
             }
         }
     }

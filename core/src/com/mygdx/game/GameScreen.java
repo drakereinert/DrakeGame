@@ -293,25 +293,25 @@ class GameScreen implements Screen {
         p2rightLimit = game.WORLD_WIDTH - player2Ship.boundingBox.x - player2Ship.boundingBox.width;
         p2upLimit = game.WORLD_HEIGHT/2 - player2Ship.boundingBox.y - player2Ship.boundingBox.height;
 
-        if (Gdx.input.isKeyPressed(Input.Keys.D) && rightLimit > 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit > 0) {
             float xChange = player1Ship.movementSpeed * deltaTime;
             xChange = Math.min(xChange, rightLimit);
             player1Ship.translate(xChange, 0f);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.W) && upLimit > 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.UP) && upLimit > 0) {
             float yChange = player1Ship.movementSpeed * deltaTime;
             yChange = Math.min(yChange, upLimit);
             player1Ship.translate(0f, yChange);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && leftLimit < 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit < 0) {
             float xChange = -player1Ship.movementSpeed * deltaTime;
             xChange = Math.max(xChange, leftLimit);
             player1Ship.translate(xChange, 0f);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.S) && downLimit < 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && downLimit < 0) {
             float yChange = -player1Ship.movementSpeed * deltaTime;
             yChange = Math.max(yChange, downLimit);
             player1Ship.translate(0f, yChange);
@@ -400,7 +400,7 @@ class GameScreen implements Screen {
     */
 
         //Player 1 Lasers
-        boolean spaceIsPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
+        boolean spaceIsPressed = Gdx.input.isKeyPressed(Input.Keys.Z);
         if (spaceIsPressed && !p1LaserKeyAlreadyPressed) {
             Laser[] lasers = player1Ship.fireLasers();
             for (Laser laser : lasers) {
@@ -410,7 +410,7 @@ class GameScreen implements Screen {
         p1LaserKeyAlreadyPressed = spaceIsPressed;
 
         //Player 2 Lasers
-        boolean mIsPressed = Gdx.input.isKeyPressed(Input.Keys.BACKSLASH);
+        boolean mIsPressed = Gdx.input.isKeyPressed(Input.Keys.V);
         if (mIsPressed && !p2LaserKeyAlreadyPressed) {
             Laser[] lasers = player2Ship.fireLasers();
             for (Laser laser : lasers) {

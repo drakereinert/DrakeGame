@@ -72,10 +72,10 @@ public class GameOverScreen implements Screen {
         timeAfterGameOver += deltaTime;
         if (timeAfterGameOver > 2) {
             game.font.getData().setScale(0.5f);
-            glyphLayout.setText(game.font, "Press SPACE to Play Again");
+            glyphLayout.setText(game.font, "Press START to Play Again");
             game.font.draw(game.batch, glyphLayout, (game.WORLD_WIDTH / 2 - glyphLayout.width / 2), game.WORLD_HEIGHT / 4);
 
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.E) || (Gdx.input.isKeyPressed(Input.Keys.Y))) {
                 game.menuMusic.stop();
                 game.setScreen(new GameScreen(game));
                 game.p1Score = 0;

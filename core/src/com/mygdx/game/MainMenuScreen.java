@@ -30,11 +30,11 @@ public class MainMenuScreen implements Screen {
         game.fontTitle.draw(game.batch, glyphLayoutTitle, (game.WORLD_WIDTH / 2) - (glyphLayoutTitle.width / 2) , game.WORLD_HEIGHT * 2 / 3);
 
         game.font.getData().setScale(0.5f);
-        glyphLayout.setText(game.font, "Press SPACE to begin");
+        glyphLayout.setText(game.font, "Press START to begin");
         game.font.draw(game.batch, glyphLayout, (game.WORLD_WIDTH / 2 - glyphLayout.width / 2), game.WORLD_HEIGHT / 3);
         game.batch.end();
 
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.E) || (Gdx.input.isKeyPressed(Input.Keys.Y))) {
             game.menuMusic.pause();
             game.setScreen(new GameScreen(game));
             dispose();

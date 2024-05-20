@@ -65,6 +65,7 @@ public class Drake extends Game {
 		batch = new SpriteBatch();
 		music = Gdx.audio.newMusic(Gdx.files.internal("mainMusic.mp3"));
 		menuMusic = Gdx.audio.newMusic(Gdx.files.internal("8bitNeverGonnaGiveYouUp.mp3"));
+		menuMusic.setVolume(0.8f);
 		font = new BitmapFont();
 		fontTitle = new BitmapFont();
 

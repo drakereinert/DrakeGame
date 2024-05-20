@@ -370,10 +370,10 @@ class GameScreen implements Screen {
 
     private void renderBackground(float deltaTime) {
         //update position of background images
-        backgroundOffsets[0] += (deltaTime * backgroundMaxScrollingSpeed) / 8;
+        backgroundOffsets[0] += (deltaTime * backgroundMaxScrollingSpeed) / 2;
         backgroundOffsets[1] += (deltaTime * backgroundMaxScrollingSpeed) / 4;
-        backgroundOffsets[2] += (deltaTime * backgroundMaxScrollingSpeed) / 2;
-        backgroundOffsets[3] += (deltaTime * backgroundMaxScrollingSpeed);
+        backgroundOffsets[2] += (deltaTime * backgroundMaxScrollingSpeed);
+        backgroundOffsets[3] += (deltaTime * backgroundMaxScrollingSpeed) / 8;
 
         //draw each background layer
         for (int layer = 0; layer < backgroundOffsets.length; layer ++) {

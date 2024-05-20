@@ -23,6 +23,7 @@ public class GameOverScreen implements Screen {
     public GameOverScreen(final Drake game) {
         this.game = game;
         game.menuMusic.play();
+        game.menuMusic.setPosition(43f);
         prepareScoreDisplay();
     }
 

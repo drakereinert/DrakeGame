@@ -8,10 +8,8 @@ import java.awt.*;
 
 public class Laser {
 
-
     //position and dimensions
     Rectangle boundingBox;
-
 
     //laser physical characteristics
     float movementSpeed; //world units per second
@@ -28,11 +26,6 @@ public class Laser {
     }
 
     public void draw(Batch batch) {
-        batch.draw(textureRegion, boundingBox.x, boundingBox.y, boundingBox.width, boundingBox.height); // div x by 2??
+        batch.draw(textureRegion, boundingBox.x, boundingBox.y, boundingBox.width, boundingBox.height);
     }
-
-//    public Rectangle getBoundingBox()
-//      return boundingBox;
-//    }
-
 }

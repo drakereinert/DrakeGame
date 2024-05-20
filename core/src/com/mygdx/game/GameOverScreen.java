@@ -78,6 +78,8 @@ public class GameOverScreen implements Screen {
             if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
                 game.menuMusic.stop();
                 game.setScreen(new GameScreen(game));
+                game.p1Score = 0;
+                game.p2Score = 0;
                 dispose();
             }
         }

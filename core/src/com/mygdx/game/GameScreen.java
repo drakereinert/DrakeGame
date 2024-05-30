@@ -260,12 +260,12 @@ class GameScreen implements Screen {
                     enemyShipTextureRegion, enemyShieldTextureRegion, enemyLaserTextureRegion));
             enemySpawnTimer -= timeBetweenEnemySpawns;
             if (timeBetweenEnemySpawns > 2) {
-                timeBetweenEnemySpawns -= .1f;
+                timeBetweenEnemySpawns -= .2f;
             } else if (timeBetweenEnemySpawns > 1) {
                 timeBetweenEnemySpawns -= .05f;
             }
-            else if (timeBetweenEnemySpawns > 0.5f) {
-                timeBetweenEnemySpawns -= .05f;
+            else if (timeBetweenEnemySpawns > 0.6f) {
+                timeBetweenEnemySpawns -= .02f;
             }
         }
     }
@@ -527,10 +527,11 @@ class GameScreen implements Screen {
             Laser laser = laserListIterator.next();
             if(player1Ship.intersects(laser.boundingBox)) {
                 //Laser contact with player ship
-                if (player1Ship.hit(laser)) {
+                if (player1Ship.hit(laser) && player1Ship.lives > 0) {
                     explosionList.add(new Explosion(explosionTexture,
                             new Rectangle(player1Ship.boundingBox), 1.6f));
                     player1Ship.lives --;
+
                     if (player1Ship.lives > 0) {
                         player1Ship.shield = 3;
                         playerLifeLost.play();
@@ -544,7 +545,7 @@ class GameScreen implements Screen {
             }
             if(player2Ship.intersects(laser.boundingBox)) {
                 //Laser contact with player ship
-                if (player2Ship.hit(laser)) {
+                if (player2Ship.hit(laser) && player2Ship.lives > 0) {
                     explosionList.add(new Explosion(explosionTexture,
                             new Rectangle(player2Ship.boundingBox), 1.6f));
                     player2Ship.lives --;
@@ -562,7 +563,7 @@ class GameScreen implements Screen {
             }
         }
 
-        if (player1Ship.lives == 0 && player2Ship.lives == 0) {
+        if (player1Ship.lives <= 0 && player2Ship.lives <= 0) {
             timeAfterDestroy += deltaTime;
             if(timeAfterDestroy > 2) {
                 game.music.stop();

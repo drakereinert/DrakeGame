@@ -37,7 +37,6 @@ class PlayerShip extends Ship {
         if (lives > 0) {
             batch.draw(shipTextureRegion, boundingBox.x, boundingBox.y, boundingBox.width, boundingBox.height);
         }
-
         if (shield > 0) {
             batch.draw(shieldTextureRegion, boundingBox.x, boundingBox.y + boundingBox.height * 0.2f, boundingBox.width, boundingBox.height);
         }

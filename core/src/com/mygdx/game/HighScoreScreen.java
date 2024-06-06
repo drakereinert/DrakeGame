@@ -2,38 +2,36 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class MainMenuScreen implements Screen {
+import java.util.Locale;
+
+public class HighScoreScreen implements Screen {
+
     final Drake game;
     private final GlyphLayout glyphLayout = new GlyphLayout();
     private final GlyphLayout glyphLayoutTitle = new GlyphLayout();
 
-    float menuDelayTime;
-    float timeSinceMenuChange;
+    private float menuDelayTime = 1f;
+    private float timeSinceMenuChange = 0;
 
-    private int currentItem;
-    private String[] menuItems;
-    private boolean upKeyAlreadyPressed;
-    private boolean downKeyAlreadyPressed;
+    private int currentItem = 0;
+    private final String[] menuItems = new String[] {"Main Menu"};
+    private boolean upKeyAlreadyPressed = false;
+    private boolean downKeyAlreadyPressed = false;
 
-    public MainMenuScreen(final Drake game) {
+    private int[] highScores;
+    private String[] names;
+
+    public HighScoreScreen(final Drake game) {
         this.game = game;
-        game.p1Score = 0;
-        game.p2Score = 0;
-        menuDelayTime = .5f;
-        timeSinceMenuChange = 0;
-        game.menuMusic.play();
-        menuItems = new String[] {
-                "Play", "High Scores", "Quit"
-        };
-        currentItem = 0;
-        upKeyAlreadyPressed = false;
-        downKeyAlreadyPressed = false;
+        Save.load();
+        highScores = Save.gd.getHighScores();
+        names = Save.gd.getNames();
     }
 
     @Override
@@ -44,42 +42,47 @@ public class MainMenuScreen implements Screen {
         game.batch.setProjectionMatrix(game.camera.combined);
 
         game.batch.begin();
-        game.fontTitle.getData().setScale(1f);
-        glyphLayoutTitle.setText(game.fontTitle, "DRAKE");
-        game.fontTitle.draw(game.batch, glyphLayoutTitle, (game.WORLD_WIDTH / 2) - (glyphLayoutTitle.width / 2) , game.WORLD_HEIGHT * 2 / 3);
+        game.fontTitle.getData().setScale(.3f);
+        glyphLayoutTitle.setText(game.fontTitle, "High Scores");
+        game.fontTitle.draw(game.batch, glyphLayoutTitle, (game.WORLD_WIDTH / 2) - (glyphLayoutTitle.width / 2) , game.WORLD_HEIGHT - glyphLayout.height * 1.01f);
 
         game.font.getData().setScale(0.5f);
-        for(int i = 0; i < menuItems.length; i++) {
-            if(currentItem == i) game.font.setColor(Color.RED);
-            else game.font.setColor(Color.WHITE);
-            glyphLayout.setText(game.font, menuItems[i]);
-            game.font.draw(game.batch, glyphLayout, (game.WORLD_WIDTH / 2 - glyphLayout.width / 2), (game.WORLD_HEIGHT / 3) - (25 * i));
+
+        String scoreString;
+        for(int i = 0; i < highScores.length; i++) {
+            scoreString = String.format("%2d. %7d %s", i + 1, highScores[i], names[i]);
+            glyphLayout.setText(game.font, scoreString);
+            game.font.draw(game.batch, String.format(scoreString), game.WORLD_WIDTH / 2 - glyphLayout.width / 2, game.WORLD_HEIGHT * 4 / 5 - 25 * i);
         }
 
 
+        // List of options for user to select at the bottom of the screen
+/*        for(int i = 0; i < menuItems.length; i++) {
+            if(currentItem == i) game.font.setColor(Color.RED);
+            else game.font.setColor(Color.WHITE);
+            glyphLayout.setText(game.font, menuItems[i]);
+            game.font.draw(game.batch, glyphLayout, (game.WORLD_WIDTH / 2 - glyphLayout.width / 2), (game.WORLD_HEIGHT / 5) - (25 * i));
+        }
+*/
+
         boolean upIsPressed = Gdx.input.isKeyPressed(Input.Keys.UP);
         if (upIsPressed && !upKeyAlreadyPressed && currentItem > 0) {
-                currentItem--;
+            currentItem--;
         }
         upKeyAlreadyPressed = upIsPressed;
 
 
         boolean downIsPressed = Gdx.input.isKeyPressed(Input.Keys.DOWN);
         if(downIsPressed && !downKeyAlreadyPressed && currentItem < menuItems.length - 1) {
-                currentItem++;
+            currentItem++;
         }
         downKeyAlreadyPressed = downIsPressed;
 
         if ((Gdx.input.isKeyPressed(Input.Keys.Z) || (Gdx.input.isKeyPressed(Input.Keys.V))) && timeSinceMenuChange > menuDelayTime) {
             game.menuMusic.pause();
             if(currentItem == 0) {
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new MainMenuScreen(game));
                 dispose();
-            } else if (currentItem == 1) {
-                game.setScreen(new HighScoreScreen(game));
-                dispose();
-            } else if (currentItem == 2) {
-                Gdx.app.exit();
             }
         }
 

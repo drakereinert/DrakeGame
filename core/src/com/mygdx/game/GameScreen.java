@@ -226,6 +226,8 @@ class GameScreen implements Screen {
 //------------------------------------------------------------------------
 
     private void updateAndRenderHUD() {
+        game.font.setColor(1,1,1,.3f);
+
         //Render TOP row
         game.font.draw(game.batch, "Score", hudLeftX, hudRow1Y, hudSectionWidth, Align.left, false);
         game.font.draw(game.batch, "Shield", hudCenterX, hudRow1Y, hudSectionWidth, Align.center, false);
@@ -566,6 +568,8 @@ class GameScreen implements Screen {
         if (player1Ship.lives <= 0 && player2Ship.lives <= 0) {
             timeAfterDestroy += deltaTime;
             if(timeAfterDestroy > 2) {
+                Save savedScoreData = new Save();
+                Save.gd.setTempScore(game.p1Score, game.p2Score);
                 game.music.stop();
                 game.setScreen(new GameOverScreen(game));
                 dispose();

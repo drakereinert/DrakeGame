@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -15,9 +16,16 @@ public class GameOverScreen implements Screen {
     private final GlyphLayout glyphLayout = new GlyphLayout();
     private final GlyphLayout glyphLayoutTitle = new GlyphLayout();
 
+    private boolean p1NewHighScore;
+    private boolean p2NewHighScore;
+    private char[] newName;
+    private int currentChar;
+
+    private final String[] menuItems = new String[] {"Main Menu"};
+    private int currentItem = 0;
     float timeAfterGameOver = 0;
 
-    float scoreMargin, LeftXPlayer1, RightXPlayer1, CenterXPlayer1, Row1Y, Row2Y, SectionWidth, LeftXPlayer2, RightXPlayer2, CenterXPlayer2;
+    float scoreMargin, LeftXPlayer1, RightXPlayer1, CenterXPlayer1, Row1Y, Row2Y, Row3Y, SectionWidth, LeftXPlayer2, RightXPlayer2, CenterXPlayer2;
 
 
     public GameOverScreen(final Drake game) {
@@ -25,6 +33,13 @@ public class GameOverScreen implements Screen {
         game.menuMusic.play();
         game.menuMusic.setPosition(43f);
         prepareScoreDisplay();
+        p1NewHighScore = Save.gd.isHighScore(Save.gd.getTempScorep1());
+        if (p1NewHighScore) {
+            newName = new char[] {'A', 'A', 'A'};
+            currentChar = 0;
+        }
+
+
     }
 
     private void prepareScoreDisplay() {
@@ -44,6 +59,7 @@ public class GameOverScreen implements Screen {
 
         Row1Y = game.WORLD_HEIGHT - scoreMargin;
         Row2Y = Row1Y - scoreMargin - game.font.getCapHeight();
+        Row3Y = Row2Y - scoreMargin - game.font.getCapHeight();
         SectionWidth = game.WORLD_WIDTH / screenSections;
     }
 
@@ -63,53 +79,60 @@ public class GameOverScreen implements Screen {
         glyphLayoutTitle.setText(game.fontTitle, "Over");
         game.fontTitle.draw(game.batch, glyphLayoutTitle, (game.WORLD_WIDTH / 2 - glyphLayoutTitle.width / 2), game.WORLD_HEIGHT * 2 / 3 - 2 * glyphLayoutTitle.height);
 
+
+
+
+        game.font.setColor(1,1,1,.7f);
         game.font.draw(game.batch, "Player 1 Score", CenterXPlayer1, Row1Y, SectionWidth, Align.center, false);
         game.font.draw(game.batch, "Player 2 Score", CenterXPlayer2, Row1Y, SectionWidth, Align.center, false);
-        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", game.p1Score), CenterXPlayer1, Row2Y, SectionWidth, Align.center, false);
-        game.font.draw(game.batch, String.format(Locale.getDefault(), "%06d", game.p2Score), CenterXPlayer2, Row2Y, SectionWidth, Align.center, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%6d", game.p1Score), CenterXPlayer1, Row2Y, SectionWidth, Align.center, false);
+        game.font.draw(game.batch, String.format(Locale.getDefault(), "%6d", game.p2Score), CenterXPlayer2, Row2Y, SectionWidth, Align.center, false);
 
 
         timeAfterGameOver += deltaTime;
         if (timeAfterGameOver > 2) {
             game.font.getData().setScale(0.5f);
-            glyphLayout.setText(game.font, "Press START to Play Again");
-            game.font.draw(game.batch, glyphLayout, (game.WORLD_WIDTH / 2 - glyphLayout.width / 2), game.WORLD_HEIGHT / 4);
+            for(int i = 0; i < menuItems.length; i++) {
+                if(currentItem == i) game.font.setColor(Color.RED);
+                else game.font.setColor(Color.WHITE);
+                glyphLayout.setText(game.font, menuItems[i]);
+                game.font.draw(game.batch, glyphLayout, (game.WORLD_WIDTH / 2 - glyphLayout.width / 2), (game.WORLD_HEIGHT / 4) - (25 * i));
+            }
 
-            if (Gdx.input.isKeyPressed(Input.Keys.E) || (Gdx.input.isKeyPressed(Input.Keys.Y))) {
+            if (Gdx.input.isKeyPressed(Input.Keys.Z) || (Gdx.input.isKeyPressed(Input.Keys.V))) {
                 game.menuMusic.stop();
-                game.setScreen(new GameScreen(game));
-                game.p1Score = 0;
-                game.p2Score = 0;
+                game.setScreen(new MainMenuScreen(game));
                 dispose();
             }
         }
+
+        if(!p1NewHighScore && !p2NewHighScore) {
+            game.batch.end();
+            return;
+        }
+
+        game.font.setColor(1,1,1,1);
+        if(p1NewHighScore) game.font.draw(game.batch, String.format(Locale.getDefault(), "%s", "NEW HIGH SCORE"), CenterXPlayer1, Row3Y, SectionWidth, Align.center, false);
+        if(p2NewHighScore) game.font.draw(game.batch, String.format(Locale.getDefault(), "%s", "NEW HIGH SCORE"), CenterXPlayer2, Row3Y, SectionWidth, Align.center, false);
+
         game.batch.end();
-
-
     }
 
     @Override
-    public void resize(int width, int height) {
-    }
+    public void resize(int width, int height) {}
 
     @Override
-    public void show() {
-
-    }
+    public void show() {}
 
     @Override
-    public void hide() {
-    }
+    public void hide() {}
 
     @Override
-    public void pause() {
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-    }
+    public void resume() {}
 
     @Override
-    public void dispose() {
-    }
+    public void dispose() {}
 }
